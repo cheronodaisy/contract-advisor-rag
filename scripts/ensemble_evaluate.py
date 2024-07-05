@@ -1,12 +1,16 @@
 import os
 from dotenv import load_dotenv
-from langchain.prompts import ChatPromptTemplate
-from langchain.schema.runnable import RunnablePassthrough
-from langchain.schema.output_parser import StrOutputParser
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
-from langchain.retrievers.multi_query import MultiQueryRetriever
+#from langchain.retrievers.multi_query import MultiQueryRetriever
+from datasets import Dataset
+from langchain.retrievers import EnsembleRetriever
+from langchain_community.retrievers import BM25Retriever
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain.schema import Document
+from langchain_community.document_loaders import TextLoader
+from langchain_openai import OpenAIEmbeddings
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -21,36 +25,41 @@ llm = ChatOpenAI(
         max_tokens=800,
         model_kwargs={"top_p": 0, "frequency_penalty": 0, "presence_penalty": 0},
     )
-# Path to the Chroma DB
-chroma_db_path = "/home/daisy/Desktop/tenx/ContractAdvisorRAG/scripts/db1"
+embedding = OpenAIEmbeddings()
 
-# Load Chroma DB vector store
-vectorstore = Chroma(
-    persist_directory=chroma_db_path,
-    embedding_function=OpenAIEmbeddings()
+loader = TextLoader("../data/Raptor.txt")
+data = loader.load()
+loader = TextLoader("../data/Robinson.txt")
+data2 = loader.load()
+
+data = data + data2
+
+text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+docs = text_splitter.split_documents(data)
+
+#ensemble retriever
+bm25_retriever = BM25Retriever.from_documents(docs)
+bm25_retriever.k = 2
+
+chroma_vectorstore = Chroma.from_documents(docs, embedding)
+chroma_retriever = chroma_vectorstore.as_retriever()
+
+ensemble_retriever = EnsembleRetriever(
+    retrievers=[bm25_retriever, chroma_retriever], weights=[0.5, 0.5]
 )
 
-# Initialize retriever from the vector store
-#retriever = vectorstore.as_retriever()
-
-#multiquery retriever
-retriever = MultiQueryRetriever.from_llm(
-    retriever=vectorstore.as_retriever(), llm=llm
-)
 # Set up the RAG chain
-rag_chain = RetrievalQA.from_chain_type(llm, chain_type="stuff", retriever=retriever)
+rag_chain = RetrievalQA.from_chain_type(llm, chain_type="stuff", retriever=ensemble_retriever)
 
-def rag_qa(query):
-    response = rag_chain.invoke(query)
-    return response
+#def rag_qa(query):
+    #response = rag_chain.invoke(query)
+    #return response
 
-#query = "In which street does the Advisor live?"
+#query = "What is the termination notice?"
 #answer = rag_qa(query)
 #print(answer)
 
 #RAGAS
-from datasets import Dataset
-
 questions = [
     "Who are the parties to the Agreement and what are their defined names?", 
     "What is the termination notice?",
@@ -75,7 +84,7 @@ contexts = []
 for query in questions:
     result = rag_chain.invoke(query)
     answer = result['result'] if 'result' in result else result  # Ensure result is in the expected format
-    relevant_docs = retriever.invoke(query)
+    relevant_docs = ensemble_retriever.invoke(query)
     answers.append(answer)
     contexts.append([doc.page_content for doc in relevant_docs])
 
