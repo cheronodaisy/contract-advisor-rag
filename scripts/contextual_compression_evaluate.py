@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_community.vectorstores import Chroma
 from langchain.chains import RetrievalQA
-#from langchain.retrievers.multi_query import MultiQueryRetriever
 from datasets import Dataset
 from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
@@ -15,13 +14,12 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
-from langchain.document_transformers import EmbeddingsRedundantFilter
 from langchain.retrievers.document_compressors import DocumentCompressorPipeline
 from langchain.text_splitter import CharacterTextSplitter
-#from langchain.embeddings import OpenAIEmbeddings
 from langchain.retrievers.document_compressors import EmbeddingsFilter
 from langchain.retrievers import ContextualCompressionRetriever
 from langchain.retrievers.document_compressors import LLMChainExtractor
+from langchain_community.document_transformers import EmbeddingsRedundantFilter
 
 load_dotenv()
 
@@ -44,12 +42,6 @@ vectorstore = Chroma(
 # Initialize retriever from the vector store
 retriever = vectorstore.as_retriever()
 
-compressor = LLMChainExtractor.from_llm(llm)
-compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
-
-embeddings_filter = EmbeddingsFilter(embeddings=embedding, similarity_threshold=0.85)
-compression_retriever = ContextualCompressionRetriever(base_compressor=embeddings_filter, base_retriever=retriever)
-
 splitter = CharacterTextSplitter(chunk_size=300, chunk_overlap=0, separator=". ")
 redundant_filter = EmbeddingsRedundantFilter(embeddings=embedding)
 relevant_filter = EmbeddingsFilter(embeddings=embedding, similarity_threshold=0.76)
@@ -61,9 +53,9 @@ compression_retriever = ContextualCompressionRetriever(base_compressor=pipeline_
 
 rag_chain = RetrievalQA.from_chain_type(llm, chain_type="stuff", retriever=compression_retriever)
 
-#def rag_qa(query):
-    #response = rag_chain.invoke(query)
-    #return response
+def rag_qa(query):
+    response = rag_chain.invoke(query)
+    return response
 
 #query = "What are the payments to the Advisor under the Agreement?"
 #answer = rag_qa(query)
