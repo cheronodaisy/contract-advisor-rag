@@ -7,27 +7,21 @@ from langchain.chains import RetrievalQA
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain.retrievers.multi_query import MultiQueryRetriever
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import TextLoader
 import clipboard
 
 load_dotenv()
 
-llm = ChatOpenAI(model_name="gpt-3.5-turbo", api_key=os.getenv("OPENAI_API_KEY"), temperature=0)
+embedding_function = OpenAIEmbeddings()
+db3 = Chroma(persist_directory="./chroma_db", embedding_function=embedding_function)
 
-# Path to the Chroma DB
-chroma_db_path = "/home/daisy/Desktop/tenx/ContractAdvisorRAG/scripts/db1"
-
-# Load Chroma DB vector store
-vectorstore = Chroma(
-    persist_directory=chroma_db_path,
-    embedding_function=OpenAIEmbeddings()
+llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+retriever_from_llm = MultiQueryRetriever.from_llm(
+    retriever=db3.as_retriever(), llm=llm
 )
 
-retriever = MultiQueryRetriever.from_llm(
-    retriever=vectorstore.as_retriever(), llm=llm
-)
-
-# Set up the RAG chain
-rag_chain = RetrievalQA.from_chain_type(llm, chain_type="stuff", retriever=retriever)
+rag_chain = RetrievalQA.from_chain_type(llm, chain_type="stuff", retriever=retriever_from_llm)
 
 # Streamlit UI
 st.title("Contract Q&A System")
@@ -73,6 +67,3 @@ if st.button("Submit"):
 
 st.write("Disclaimer! Please verify any important information as the system may make mistakes.")
 st.sidebar.write("Developed by Daisy Cherono")
-
-#for text in st.session_state.copied:
-    #st.toast(f"Copied to clipboard", icon='✅')
