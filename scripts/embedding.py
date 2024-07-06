@@ -21,8 +21,8 @@ pdf_text_2 = extract_text_from_pdf("../data/robinson.pdf")
 
 texts = [pdf_text_1, pdf_text_2]
 
-chunk_size = 1000
-chunk_overlap = 0
+chunk_size = 500
+chunk_overlap = 50
 
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
 
@@ -30,7 +30,7 @@ chunks = []
 for text in texts:
     chunks.extend(text_splitter.split_text(text))
 
-persist_directory = 'db'
+persist_directory = 'db1'
 embeddings_file = os.path.join(persist_directory, 'embeddings.bin')
 
 if not os.path.exists(embeddings_file):

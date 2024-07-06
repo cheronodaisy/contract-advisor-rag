@@ -1,2 +1,9 @@
 .env
 data/
+myenv/
+notebooks/db/
+scripts/db/
+scripts/db1/
+scripts/db2/
+scripts/scripts/
+scripts/__pycache__
