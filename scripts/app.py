@@ -2,12 +2,12 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 from langchain_community.vectorstores import Chroma
-from langchain.docstore.document import Document
+#from langchain.docstore.document import Document
 from langchain.chains import RetrievalQA
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_openai import ChatOpenAI
 from langchain.retrievers.multi_query import MultiQueryRetriever
-import pyperclip
+import clipboard
 
 load_dotenv()
 
@@ -35,10 +35,18 @@ st.title("Contract Q&A System")
 if "history" not in st.session_state:
     st.session_state.history = []
 
+if "copied" not in st.session_state:
+    st.session_state.copied = []
+
 def rag_qa(query):
     response = rag_chain.invoke(query)
     return response['result']
 
+def on_copy_click(text):
+    st.session_state.copied.append(text)
+    clipboard.copy(text)
+
+# Sidebar
 with st.sidebar:
     st.header("Chat History")
     search_query = st.text_input("Search chat history")
@@ -60,10 +68,11 @@ if st.button("Submit"):
         st.session_state.history.append((query, answer))
         st.write("### Answer")
         st.write(answer)
-        if st.button("📋"):
-            st.experimental_set_query_params(answer=answer)
-            st.success("Answer copied to clipboard!")
+        st.button("📋", on_click=on_copy_click, args=(answer,))
+        st.toast(f"Copied to clipboard", icon='✅')
 
-st.write("Disclaimer: Please verify any important information as the system may make mistakes.")
+st.write("Disclaimer! Please verify any important information as the system may make mistakes.")
+st.sidebar.write("Developed by Daisy Cherono")
 
-st.sidebar.write("Developed by D.C")
+#for text in st.session_state.copied:
+    #st.toast(f"Copied to clipboard", icon='✅')
