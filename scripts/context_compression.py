@@ -44,13 +44,13 @@ vectorstore = Chroma(
 # Initialize retriever from the vector store
 retriever = vectorstore.as_retriever()
 
-compressor = LLMChainExtractor.from_llm(llm)
-compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
+#compressor = LLMChainExtractor.from_llm(llm)
+#compression_retriever = ContextualCompressionRetriever(base_compressor=compressor, base_retriever=retriever)
 
-embeddings_filter = EmbeddingsFilter(embeddings=embedding, similarity_threshold=0.85)
-compression_retriever = ContextualCompressionRetriever(base_compressor=embeddings_filter, base_retriever=retriever)
+#embeddings_filter = EmbeddingsFilter(embeddings=embedding, similarity_threshold=0.85)
+#compression_retriever = ContextualCompressionRetriever(base_compressor=embeddings_filter, base_retriever=retriever)
 
-splitter = CharacterTextSplitter(chunk_size=300, chunk_overlap=0, separator=". ")
+splitter = CharacterTextSplitter(chunk_size=500, chunk_overlap=50, separator=". ")
 redundant_filter = EmbeddingsRedundantFilter(embeddings=embedding)
 relevant_filter = EmbeddingsFilter(embeddings=embedding, similarity_threshold=0.76)
 pipeline_compressor = DocumentCompressorPipeline(
