@@ -38,7 +38,7 @@ Users can interact with the system to ask questions and get detailed answers abo
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/ContractAdvisorRag.git
+    git clone https://github.com/cheronodaisy/ContractAdvisorRag.git
     ```
 2. Navigate to the project directory:
     ```sh
