@@ -7,3 +7,4 @@ scripts/db1/
 scripts/db2/
 scripts/scripts/
 scripts/__pycache__
+scripts/chroma_db
