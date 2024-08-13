@@ -8,6 +8,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
 from langchain.retrievers import EnsembleRetriever
 from langchain_community.retrievers import BM25Retriever
+from langchain.retrievers.multi_query import MultiQueryRetriever
 import fitz
 from langchain.docstore.document import Document
 import io
@@ -65,17 +66,20 @@ def process_documents(texts):
 
     documents = [Document(page_content=chunk) for chunk in chunks]
 
-    bm25_retriever = BM25Retriever.from_documents(documents)
-    bm25_retriever.k = 2
+    # bm25_retriever = BM25Retriever.from_documents(documents)
+    # bm25_retriever.k = 2
 
-    chroma_vectorstore = Chroma.from_documents(documents, embedding)
-    chroma_retriever = chroma_vectorstore.as_retriever()
+    # chroma_vectorstore = Chroma.from_documents(documents, embedding)
+    # chroma_retriever = chroma_vectorstore.as_retriever()
 
-    ensemble_retriever = EnsembleRetriever(
-        retrievers=[bm25_retriever, chroma_retriever], weights=[0.5, 0.5]
-    )
+    # ensemble_retriever = EnsembleRetriever(
+    #     retrievers=[bm25_retriever, chroma_retriever], weights=[0.5, 0.5]
+    # )
+    vectorstore = Chroma.from_documents(documents=documents, embedding=embedding)
+    retriever = MultiQueryRetriever.from_llm(
+        retriever=vectorstore.as_retriever(), llm=llm)
 
-    rag_chain = RetrievalQA.from_chain_type(llm, chain_type="stuff", retriever=ensemble_retriever)
+    rag_chain = RetrievalQA.from_chain_type(llm, chain_type="stuff", retriever=retriever)
     return rag_chain
 
 # Initialize session state
