@@ -75,6 +75,10 @@ Users can interact with the system to ask questions and get detailed answers abo
    ```bash
    pip install -r requirements.txt
    ```
+5. **Create a .env in the root directory and add an OpenAI API key:**
+   ```bash
+   OPENAI_API_KEY="Your OpenAI key"
+   ```
 
 ### Running the Project
 
@@ -125,7 +129,7 @@ Contributions from the community are welcome. If you would like to contribute to
 
 ## CI/CD Pipeline
 
-- **GitHub Actions:** Automated workflows for building, testing, and deploying the application. Configured in the `.github/workflows/ci-cd.yml` file.
+- **GitHub Actions:** Automated workflows for building, and deploying the application. Configured in the `.github/workflows/ci-cd.yml` file.
 
 ## Dockerization
 
@@ -133,8 +137,5 @@ Contributions from the community are welcome. If you would like to contribute to
 
 ## Makefile
 
-- **Makefile:** Automates common tasks such as installing dependencies, building Docker images, and deploying containers. Use `make` commands to streamline the development workflow.
+- **Makefile:** Automates dependency installation, building Docker images, and deploying containers. Use `make` commands to streamline the development workflow.
 
-## Documentation
-
-- **README:** This file includes instructions for setting up the development environment, running the project, and utilizing the implemented tools.
